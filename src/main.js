@@ -13,9 +13,9 @@ const dataSet = _.map(_.range(25), () => {
 
 // all d3 code below
 const margin = {
-  top: 0,
-  right: 0,
-  bottom: 20,
+  top: 20,
+  right: 20,
+  bottom: 40,
   left: 50
 };
 const width = 600 - margin.left - margin.right;
@@ -51,6 +51,34 @@ svg.selectAll('circle')
   .attr('r', data => {
     return data.radius;
   });
+
+  var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient('bottom')
+    .ticks(10)
+    .innerTickSize(10)
+    .outerTickSize(0)
+    .tickPadding(5);
+
+  svg.append('g')
+    .attr('class', 'x axis')
+    .attr('transform', 'translate(0, ' + (height + 0) + ')')
+    .call(xAxis);
+
+
+  var yAxis = d3.svg.axis()
+    .scale(yScale)
+    .orient('left')
+    .ticks(10)
+    .innerTickSize(10)
+    .outerTickSize(0)
+    .tickPadding(5)
+
+  svg.append('g')
+    .attr('class', 'y axis')
+    .attr('transform', 'translate(0, '+ 0 + ')')
+    .call(yAxis)
+
 
 
 /*

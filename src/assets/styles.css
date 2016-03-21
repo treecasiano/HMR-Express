@@ -1,16 +1,24 @@
 body {
   padding-top: 50px;
   padding-left: 50px;
+  font-family: 'Kreon', "Lucida Bright", serif;
 }
 #content {
   width: 600px;
   height: 400px;
-  background-color: #EFE;
+  background-color: lavenderblush;
 }
 .bubble {
   display: inline-block;
-  fill: tomato;
+  fill: darkMagenta;
   fill-opacity: 0.5;
   stroke: black;
   stroke-weight: 1px;
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
 }
