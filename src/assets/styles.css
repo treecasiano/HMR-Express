@@ -4,16 +4,9 @@ body {
   font-family: 'Kreon', "Lucida Bright", serif;
 }
 #content {
-  width: 600px;
-  height: 400px;
+  width: 800px;
+  height: 500px;
   background-color: lavenderblush;
-}
-.bubble {
-  display: inline-block;
-  fill: darkMagenta;
-  fill-opacity: 0.5;
-  stroke: black;
-  stroke-weight: 1px;
 }
 
 .axis path, .axis line {
@@ -21,4 +14,15 @@ body {
   stroke: #000;
   stroke-width: 1px;
   shape-rendering: crispEdges;
+}
+
+g {
+  font-family: Lato;
+  font-size: 12px;
+}
+
+.line {
+  stroke: darkMagenta;
+  stroke-width: 1px;
+  fill: none;
 }
