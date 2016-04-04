@@ -42,16 +42,16 @@ filerIdSubmit.addEventListener ("click", () => {
     // const parseDate = d3.time.format ('%Y-%m-%d').parse;
 
     var nestedDataSet = d3.nest ()
-      .key (function (d) {
+      .key (d => {
         return d.date;
       })
-      .rollup (function (v) {
-        return d3.sum (v, function (d) {
+      .rollup (v => {
+        return d3.sum (v, d => {
           return d.amount;
         });
       })
       .entries (dataSet);
-    
+
 
     // using lodash to create an array of dates
     let dates = _.map (nestedDataSet, 'key');
@@ -71,7 +71,7 @@ filerIdSubmit.addEventListener ("click", () => {
 
     dataSet = finalData;
 
-    dataSet.sort (function (a, b) {
+    dataSet.sort ( (a, b) => {
       return a.date.getTime () - b.date.getTime ()
     });
 
