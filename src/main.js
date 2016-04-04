@@ -71,7 +71,7 @@ filerIdSubmit.addEventListener ("click", () => {
 
     dataSet = finalData;
 
-    dataSet.sort ( (a, b) => {
+    dataSet.sort ((a, b) => {
       return a.date.getTime () - b.date.getTime ()
     });
 
