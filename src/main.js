@@ -2,11 +2,6 @@ import d3 from 'd3';
 import _ from 'lodash';
 import './assets/styles.css';
 
-
-// TODO: add promise/error handling
-// TODO: fix line chart so that it displays a sum of transactions for each date
-
-
 const margin = {
   top: 20,
   right: 50,
@@ -14,126 +9,113 @@ const margin = {
   left: 70
 };
 
-const width = 800 - margin.left - margin.right;
-const height = 500 - margin.top - margin.bottom;
+const width = 1200 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
 
-const filerIdInput = document.getElementById ("filerIdInput");
-const filerIdSubmit = document.getElementById ("filerIdSubmit");
-let filerId = parseInt (filerIdInput.value);
+const parseDate = d3.time.format('%Y-%m-%d').parse;
 
-filerIdSubmit.addEventListener ("click", () => {
-  if (document.getElementById ("mySVG")) {
-    d3.select ("#mySVG").remove ();
-  }
+const line = d3.svg.line()
+    .x(function(d) {
+      return x(d.date);
+    })
+    .y(function(d) {
+      return y(d.amount);
+    })
+    .interpolate('linear');
 
-  filerId = parseInt (filerIdInput.value);
-
-  let url = 'http://54.213.83.132/hackoregon/http/current_candidate_transactions_in/' + filerId + '/';
-
-  d3.json (url, json => {
-
-    let dataSet = json.map (item => {
-      return {
-        date: item.tran_date,
-        amount: +item.amount
-      }
-    });
-
-    // const parseDate = d3.time.format ('%Y-%m-%d').parse;
-
-    var nestedDataSet = d3.nest ()
-      .key (d => {
-        return d.date;
-      })
-      .rollup (v => {
-        return d3.sum (v, d => {
-          return d.amount;
-        });
-      })
-      .entries (dataSet);
-
-
-    // using lodash to create an array of dates
-    let dates = _.map (nestedDataSet, 'key');
-    let amounts = _.map (nestedDataSet, 'values');
-
-    let newDates = [];
-    let finalData = [];
-
-    for (let i = 0; i < nestedDataSet.length; i++) {
-      newDates[i] = new Date (dates[i]);
-    }
-
-    for (let i = 0; i < nestedDataSet.length; i++) {
-      finalData.push (
-        {date: newDates[i], amount: amounts[i]});
-    }
-
-    dataSet = finalData;
-
-    dataSet.sort ((a, b) => {
-      return a.date.getTime () - b.date.getTime ()
-    });
-
-    // defining the x and y values
-    let x = d3.time.scale () // determined through d3.time.scale function
-      .domain (d3.extent (newDates)) // using the extent method on dates array
-      .range ([0, width]);
-    let y = d3.scale.linear () // determined through d3.scale.linear function
-      .domain (d3.extent (amounts))
-      // .domain(d3.extent(amounts)) // we had this in an array in class like
-      // [d3.extent...] and it should not have been
-      .range ([height, 0]);
-
-    // we didn't get to this in class but this should be familiar
-    let xAxis = d3.svg.axis ().scale (x)
-      .orient ('bottom').ticks (6);
-    let yAxis = d3.svg.axis ().scale (y)
-      .orient ('left').ticks (10);
-
-    // we attach the svg to the html here
-    let svg = d3.select ('#content').append ('svg')
-      .attr ('width', width + margin.left + margin.right)
-      .attr ('height', height + margin.top + margin.bottom)
-      .attr ("id", "mySVG")
-      .append ('g')
-      .attr ("transform",
+const svg = d3
+    .select('#content')
+    .append('svg')
+    .attr('width', width + margin.left + margin.right)
+    .attr('height', height + margin.top + margin.bottom)
+    .append('g')
+    .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
 
-    /***** Start of path definition *****/
+const x = d3.time.scale().range([0, width]);
+const y = d3.scale.linear().range([height-2, 0]);
 
-    // defining path function to draw the line
-    let path = d3.svg.line () // using d3's line layout here
-      .x (d => {
-        return x (d.date); // Mistake was we had return d.date
-      })
-      .y (d => {
-        return y (d.amount); // Mistake was we had return d.amount
-      })
+const xAxis = d3.svg.axis().scale(x)
+    .orient('bottom').ticks(12);
+const yAxis = d3.svg.axis().scale(y)
+    .orient('left').ticks(10);
 
-      .interpolate ('basis');
-
-    /***** End of path definition *****/
-
-    svg.append ('path') // if you append path above, this should be just svg
-      // .datum(dataSet) // if you append the path above, you HAVE to do this
-      .attr ('class', 'line')
-      .attr ('d', path (dataSet));// if you append the path above, you only pass in
-    // path
-    // function like .attr('d', path)
-
-    // append axes
-    svg.append ("g")
-      .attr ("class", "x axis")
-      .attr ("transform", "translate(0," + height + ")")
-      .call (xAxis);
-    svg.append ("g")
-      .attr ("class", "y axis")
-      .call (yAxis)
+let fetchData = id => {
+  let url = 'http://54.213.83.132/hackoregon/http/current_candidate_transactions_in/' + id + '/';
+  let fetchedData = new Promise((resolve, reject) => {
+    $.getJSON(url, json => {
+      resolve(json);
+    })
   });
+  return fetchedData;
+};
 
+let sortByDates = (a, b) => { return a.date - b.date };
+
+let formatData = data => {
+  let dataSet = data.map((item) => {
+    return {
+      date: parseDate(item.tran_date),
+      amount: item.amount
+    };
+  });
+  dataSet.sort(sortByDates);
+  return dataSet;
+};
+
+let visualize = data => {
+  console.log('visualizing');
+  let dates = _.map(data, 'date');
+  let amounts = _.map(data, 'amount');
+
+  y.domain(d3.extent(amounts));
+  x.domain(d3.extent(dates));
+
+  let updateSvg = d3.select("#content").transition();
+
+  updateSvg.select(".line")
+      .duration(500)
+      .attr("d", line(data));
+  updateSvg.select(".x.axis")
+      .duration(500)
+      .call(xAxis);
+  updateSvg.select(".y.axis")
+      .duration(500)
+      .call(yAxis);
+
+};
+
+$('select').on('change', (e, i, v) => {
+  let filerId = $('select option:selected').val();
+  fetchData(filerId)
+      .then(value => {
+        return formatData(value)
+      })
+      .then(value => {
+        return visualize(value)
+      })
 });
 
+let initialize = id => {
+  let url = 'http://54.213.83.132/hackoregon/http/current_candidate_transactions_in/' + id + '/';
+  d3.json(url, (json) => {
+    let dataSet = formatData(json);
+
+    svg.append('path')
+        .attr('class', 'line')
+        .attr('d', line(dataSet));
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+    visualize(dataSet);
+  })
+};
+
+initialize(931);
 
 /*
  * ignore this code below - it's for webpack to know that this
