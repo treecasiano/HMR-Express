@@ -1,12 +1,11 @@
 body {
   padding-top: 50px;
-  padding-left: 50px;
+  padding-left: 100px;
   font-family: 'Kreon', "Lucida Bright", serif;
 }
 #content {
-  width: 800px;
+  min-width: 800px;
   height: 500px;
-  background-color: lavenderblush;
 }
 
 .axis path, .axis line {
